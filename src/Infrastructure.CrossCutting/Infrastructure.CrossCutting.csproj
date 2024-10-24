@@ -7,5 +7,5 @@
         <RootNamespace>Smart.Admin.Products.Infrastructure.CrossCutting</RootNamespace>
         <AssemblyName>Smart.Admin.Products.Infrastructure.CrossCutting</AssemblyName>
     </PropertyGroup>
-
+    <Target Name="PublishContainer"/>
 </Project>

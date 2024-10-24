@@ -7,5 +7,5 @@
         <RootNamespace>Smart.Admin.Products.Application</RootNamespace>
         <AssemblyName>Smart.Admin.Products.Application</AssemblyName>
     </PropertyGroup>
-
+    <Target Name="PublishContainer"/>
 </Project>
