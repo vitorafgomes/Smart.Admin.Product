@@ -1,0 +1,6 @@
+@Smart.Admin.Products.Api_HostAddress = http://localhost:5132
+
+GET {{Smart.Admin.Products.Api_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
