@@ -4,6 +4,8 @@
         <TargetFramework>net9.0</TargetFramework>
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
+        <RootNamespace>Smart.Admin.Products.Api</RootNamespace>
+        <AssemblyName>Smart.Admin.Products.Api</AssemblyName>
     </PropertyGroup>
 
     <ItemGroup>
