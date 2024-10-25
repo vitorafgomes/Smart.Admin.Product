@@ -1,0 +1,160 @@
+# This workflow will build a .NET project
+# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-net
+name: .NET
+
+on:
+  push:
+    branches: [ main, release/*]
+    paths-ignore:
+      - '**.md'
+    # Publish semver tags as releases.
+    tags: [ 'v*' ]
+  pull_request:
+    paths-ignore:
+      - '**.md'
+
+    branches: [ main, release/*, feature/*, bugfix/*]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      packages: write
+      id-token: write
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Set up Java
+        uses: actions/setup-java@v2
+        with:
+          java-version: 17
+          distribution: "temurin"
+
+      - name: Install GitVersion
+        uses: gittools/actions/gitversion/setup@v0
+        with:
+          versionSpec: '5.x'
+
+      - name: Determine Version
+        id: version-git
+        uses: gittools/actions/gitversion/execute@v0
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v3
+        with:
+          source-url: https://nuget.pkg.github.com/vitorafgomes/index.json
+          dotnet-version: 9.x.x
+        env:
+          NUGET_AUTH_TOKEN: ${{ secrets.TOKEN_GITHUB }}
+
+      - name: Restore dependencies
+        run: dotnet restore
+
+#      - name: Dotnet Install SonarScanner
+#        run: dotnet tool install --global dotnet-sonarscanner --version 7.1.1
+#
+#      - name: Dotnet Install Coverlet
+#        run: dotnet tool install --global coverlet.console
+#
+#      - name: SonarScanner
+#        run: dotnet sonarscanner begin /k:smart-admin-product /d:sonar.host.url=${{ vars.SONARQUBE_URL }}  /d:sonar.login=${{ secrets.TOKEN_PROJECT_SONAR }} /d:sonar.cs.opencover.reportsPaths=$GITHUB_WORKSPACE/**/coverage.opencover.xml /d:sonar.language=cs /d:sonar.visualstudio.enable=true /d:sonar.verbose=false /v:${{ env.GitVersion_SemVer }}
+
+      - name: Build
+        run: dotnet build --no-restore --configuration Release
+
+      - name: Test
+        run: dotnet test --configuration release --logger trx /p:CollectCoverage=true /p:CoverletOutputFormat=opencover
+
+#      - name: SonarScanner End
+#        run: dotnet sonarscanner end /d:sonar.login=${{ secrets.TOKEN_PROJECT_SONAR }}
+
+#      - name: Check SonarQube Quality Gate
+#        shell: pwsh
+#        run: |
+#          $token = [System.Text.Encoding]::UTF8.GetBytes("${{ secrets.TOKEN_PROJECT_SONAR }}:")
+#          $base64 = [System.Convert]::ToBase64String($token)
+#
+#          $basicAuth = [string]::Format("Basic {0}", $base64)
+#          $headers = @{ Authorization = $basicAuth }
+#          $result = Invoke-RestMethod -Method Get -Uri ${{ vars.SONARQUBE_URL }}/api/qualitygates/project_status?projectKey=smart-admin-product -Headers $headers
+#          $result | ConvertTo-Json | Write-Host
+#
+#          if ($result.projectStatus.status -eq "OK") {
+#          Write-Host "Quality Gate Succeeded"
+#          }else{
+#          throw "Quality gate failed"
+#          }
+      - name: dotnet pack Smart.Admin.Product.Client.${{ env.GitVersion_SemVer }}"
+        run: |
+          dotnet pack --no-build --configuration Release --include-symbols -p:PackageVersion=${{ env.GitVersion_SemVer }}
+
+      - name: Push GitHub Packages
+        run:
+          dotnet nuget push ${{ github.workspace }}/**/*.nupkg --skip-duplicate
+      - name: Docker Login to GitHub Container Registry
+        run:
+          docker login ghcr.io -u ${{ github.repository_owner }} --password ${{ secrets.TOKEN_GITHUB }}
+
+      - name: Dotnet Push GitHub Container Registry
+        run: dotnet publish --os linux --arch arm64  /t:PublishContainer -p:ContainerImageTag=${{ env.GitVersion_SemVer }} -c Release
+
+      - name: Update target image in deployment.yaml
+        if: github.event_name != 'pull_request'
+        run: |
+          sed -i 's|ghcr.io/vitorafgomes/smart-admin-product-api:.*|ghcr.io/vitorafgomes/smart-admin-product-api:${{ env.GitVersion_SemVer }}|g' deployment/kube/deployment.yaml
+          
+          #      - name: Update values.yaml
+          #        uses: fjogeleit/yaml-update-action@main
+          #        #if: github.event_name != 'pull_request'
+          #        with:
+          #          valueFile: 'deployment.yml'
+          #          propertyPath: 'spec.template.spec.containers.0.image'
+          #          value: ghcr.io/vitorafgomes/smart-admin-product-api:${{ env.GitVersion_SemVer }}
+          #          commitChange: true
+          #          updateFile: true
+          #          message: 'Update Image Version to : {{message}}'
+          #          token: ${{ secrets.TOKEN_GITHUB }}
+          
+          
+          #      - name: Update values.yaml
+          #        uses: fjogeleit/yaml-update-action@main
+          #        if: github.event_name != 'pull_request'
+          #        with:
+          #          valueFile: 'deployments/deployment-dev.yml'
+          #          propertyPath: 'spec.template.spec.containers[0].image'
+          #          value: ghcr.io/${{ github.repository_owner }}/k8sfunctions:v${{ steps.version-git.outputs.semVer }}
+          #          commitChange: true
+          #          updateFile: true
+          #          message: 'Update Image Version to ${{  steps.version-git.outputs.semVer }}'
+          #          token: ${{ secrets.GITHUB_TOKEN }}          
+      
+      
+      #      - name: Update Image Version in the related HelmChart values.yaml
+      #        uses: fjogeleit/yaml-update-action@main
+      #        with:
+      #          valueFile: 'deployment/helm/values.yaml'
+      #          propertyPath: 'backend.version'
+      #          value: ${{ steps.version-git.outputs.semVer }}
+      #          repository: owner/target-repository
+      #          branch: deployment/${{ steps.version-git.outputs.semVer }}
+      #          targetBranch: development
+      #          createPR: true
+      #          message: 'Update Image Version to ${{ steps.version-git.outputs.semVer }}'
+      #          token: ${{ secrets.TOKEN_GITHUB }}
+      #          workDir: infrastructure
+
+      - name: Create Release Feature/BugFix Branch
+        id: create_release
+        if: github.event_name != 'pull_request'
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.TOKEN_GITHUB }} # This token is provided by Actions, you do not need to create your own token
+        with:
+          tag_name: ${{ steps.version-git.outputs.semVer }}
+          release_name: v${{ steps.version-git.outputs.semVer }}
+          draft: false
+          prerelease: github.ref != 'refs/heads/main'

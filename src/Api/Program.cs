@@ -1,10 +1,16 @@
+using Smart.Admin.Products.Infrastructure.CrossCutting.Diagnostics;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 // builder.Services.AddOpenApi();
+builder.AddServiceDefaults();
 
 var app = builder.Build();
+
+// Get an instance of ILogger
+var logger = app.Services.GetRequiredService<ILogger<Program>>();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
@@ -21,6 +27,7 @@ var summaries = new[]
 
 app.MapGet("/weatherforecast", () =>
     {
+        logger.LogInformation("Generating weather forecast");
         var forecast = Enumerable.Range(1, 5).Select(index =>
                 new WeatherForecast
                 (

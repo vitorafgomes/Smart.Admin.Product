@@ -2,14 +2,23 @@
 
     <PropertyGroup>
         <TargetFramework>net9.0</TargetFramework>
-        <Nullable>enable</Nullable>
+        <Nullable>disable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
         <RootNamespace>Smart.Admin.Products.Api</RootNamespace>
         <AssemblyName>Smart.Admin.Products.Api</AssemblyName>
+        <ContainerRegistry>ghcr.io</ContainerRegistry>
+        <ContainerRepository>vitorafgomes/smart.admin.products.api</ContainerRepository>
+        <ContainerRuntimeIdentifier>linux-arm64</ContainerRuntimeIdentifier>
     </PropertyGroup>
 
     <ItemGroup>
         <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.0-rc.1.24452.1"/>
+        <PackageReference Include="Microsoft.NET.Build.Containers" Version="9.0.100-rc.2.24474.11" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\Api.Contracts\Api.Contracts.csproj" />
+      <ProjectReference Include="..\Infrastructure.CrossCutting\Infrastructure.CrossCutting.csproj" />
     </ItemGroup>
 
 </Project>
