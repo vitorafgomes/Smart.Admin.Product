@@ -102,10 +102,10 @@ jobs:
       - name: Dotnet Push GitHub Container Registry
         run: dotnet publish --os linux --arch arm64  /t:PublishContainer -p:ContainerImageTag=${{ env.GitVersion_SemVer }} -c Release
 
-      - name: Update target image in deployment.yaml
-        if: github.event_name != 'pull_request'
-        run: |
-          sed -i 's|ghcr.io/vitorafgomes/smart-admin-product-api:.*|ghcr.io/vitorafgomes/smart-admin-product-api:${{ env.GitVersion_SemVer }}|g' deployment/kube/deployment.yaml
+#      - name: Update target image in deployment.yaml
+#        if: github.event_name != 'pull_request'
+#        run: |
+#          sed -i 's|ghcr.io/vitorafgomes/smart-admin-product-api:.*|ghcr.io/vitorafgomes/smart-admin-product-api:${{ env.GitVersion_SemVer }}|g' deployment/kube/deployment.yaml
           
           #      - name: Update values.yaml
           #        uses: fjogeleit/yaml-update-action@main
