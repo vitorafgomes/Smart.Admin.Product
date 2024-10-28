@@ -170,7 +170,7 @@ jobs:
             HELM_CHART_NAME: ${{ secrets.HELM_CHART_NAME }}
         run: |
             # Path to the custom values.yaml file
-            VALUES_FILE=deployment/values.yaml
+            VALUES_FILE=/deployment/values.yaml
             
             # Create or update Argo CD application with custom values file
             argocd app create smart-admin-products-api \
