@@ -178,7 +178,6 @@ jobs:
             --helm-chart $HELM_CHART_NAME \
             --dest-server https://kubernetes.default.svc \
             --dest-namespace $ARGOCD_APP_NAMESPACE \
-            --values $VALUES_FILE \
             --sync-policy automated \
             --grpc-web || \
             argocd app set smart-admin-products-api \
@@ -186,7 +185,6 @@ jobs:
             --helm-chart $HELM_CHART_NAME \
             --dest-server https://kubernetes.default.svc \
             --dest-namespace $ARGOCD_APP_NAMESPACE \
-            --values $VALUES_FILE \
             --sync-policy automated \
             --grpc-web
 
