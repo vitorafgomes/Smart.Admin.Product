@@ -174,19 +174,19 @@ jobs:
             
             # Create or update Argo CD application with custom values file
             argocd app create my-helm-app \
-              --repo $HELM_REPO_URL \
-              --helm-chart $HELM_CHART_NAME \
-              --dest-server https://kubernetes.default.svc \
-              --dest-namespace $ARGOCD_APP_NAMESPACE \
-              --values $VALUES_FILE \
+            --repo $HELM_REPO_URL \
+            --helm-chart $HELM_CHART_NAME \
+            --dest-server https://kubernetes.default.svc \
+            --dest-namespace $ARGOCD_APP_NAMESPACE \
+            --values $VALUES_FILE \
             --sync-policy automated || \
             argocd app set my-helm-app \
-              --repo $HELM_REPO_URL \
-              --helm-chart $HELM_CHART_NAME \
-              --dest-server https://kubernetes.default.svc \
-              --dest-namespace $ARGOCD_APP_NAMESPACE \
-              --values $VALUES_FILE \
-              --sync-policy automated
+            --repo $HELM_REPO_URL \
+            --helm-chart $HELM_CHART_NAME \
+            --dest-server https://kubernetes.default.svc \
+            --dest-namespace $ARGOCD_APP_NAMESPACE \
+            --values $VALUES_FILE \
+            --sync-policy automated
 
       - name: Sync Argo CD Application
         run: |
