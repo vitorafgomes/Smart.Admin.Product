@@ -1,0 +1,697 @@
+# SPDX-License-Identifier: APACHE-2.0
+
+# Default values for Kubedeploy.
+
+## CHART GLOBALS
+
+# -- Override release name used in calculated "releasename-chartname" default naming convention
+nameOverride: "smart-admin-products-api"
+
+
+# -- Override full resource names instead of using calculated "releasename-chartname" default naming convention
+fullnameOverride: "smart-admin-products-api"
+
+
+# -- Allow override of auto-detected Kubernetes version
+kubeVersionOverride: "v1"
+
+
+# -- Available deployment modes, currently supported:
+#   <ul><li>**Deployment**</li>
+#   <li>**Statefulset**</li>
+#   <li>**Job**</li>
+#   <li>**Cronjob**</li>
+#   <li>**None**</li></ul>
+
+deploymentMode: Deployment
+
+
+## Application Pod definitions
+
+# -- (int) Number of Pod replicas to be deployed.
+# Applicable to Deployment and Statefulset deploymentMode
+replicaCount: 1
+
+# -- Container image settings
+# @default -- see subvalues
+image:
+  # -- Define container repository
+  repository: ghcr.io/vitorafgomes/smart.admin.products.api
+  # -- Default container pull policy
+  pullPolicy: IfNotPresent
+  # -- Define container image tag
+  tag: "0.1.0"
+  # -- Define container custom command. [Reference](https://kubernetes.io/docs/tasks/inject-data-application/define-command-argument-container/)
+  command: []
+  # -- Define container custom arguments. [Reference](https://kubernetes.io/docs/tasks/inject-data-application/define-command-argument-container/)
+  args: []
+  # -- Define container custom [lifecycle hooks](https://kubernetes.io/docs/tasks/configure-pod-container/attach-handler-lifecycle-event/). [More info](https://kubernetes.io/docs/concepts/containers/container-lifecycle-hooks/)
+  lifecycle: {}
+  # -- Define Pod [terminationGracePeriodSeconds](https://kubernetes.io/docs/concepts/containers/container-lifecycle-hooks/#hook-handler-execution).
+  # Should be greater then expected run time of lifecycle hooks
+  terminationGracePeriodSeconds: 30
+
+
+# -- Define [ImagePullSecrets](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#podspec-v1-core)
+imagePullSecrets: []
+
+
+# -- Container resource requests and limits.
+# Resource requests and limits are left as a conscious choice for the user.
+# This also increases chances charts run on environments with little
+# resources, such as Minikube. See [resources](https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/) for syntax
+resources:
+  requests:
+    cpu: 20m
+    memory: 20Mi
+  limits:
+    cpu: 100m
+  memory: 256Mi
+
+
+# -- Define container exposed ports see: [containerPort](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#containerport-v1-core)
+ports: []
+  #  - name: http
+  #    containerPort: 80
+  #    protocol: TCP
+  # - name: prometheus
+#   containerPort: 9000
+#   protocol: TCP
+
+
+# -- Define environment variables for all containers in Pod.
+# For reference see: [env](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#envvar-v1-core).
+env:
+   - name: OTEL_EXPORTER_OTLP_ENDPOINT
+     value: https://dopentelemetry-kube-stack-daemon-collector:4317
+   - name: ServiceName
+     value: "Smart.Admin.Products.Api"
+   - name: ServiceVersion
+     value: "0.1.0"
+   - name: AutoGenerateServiceInstanceId
+     value: "false"
+   - name: ServiceInstanceId
+     value: "Smart.Admin.Products"
+  #   # see: https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#envfromsource-v1-core
+  # - name: fromvalue
+  #   valueFrom:
+  #     secretKeyRef:
+#       name: secret-name
+#       key: key-name
+
+
+# -- Define environment variables from ConfigMap or Secret objects for all containers in Pod.
+# For reference see [envFrom secret example](https://kubernetes.io/docs/tasks/inject-data-application/distribute-credentials-secure/#configure-all-key-value-pairs-in-a-secret-as-container-environment-variables)
+# or [envFrom configmap example](https://kubernetes.io/docs/tasks/configure-pod-container/configure-pod-configmap/#configure-all-key-value-pairs-in-a-configmap-as-container-environment-variables)
+envFrom: []
+  # env from configmap
+  # - configMapRef:
+  #     name: special-config
+  # env from secret
+# - secretRef:
+#     name: test-secret
+
+
+# -- Define Pod [annotations](https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/)
+podAnnotations: {}
+
+
+# -- Define Pod extra [labels](https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/)
+podExtraLabels: {
+  app: smart-admin-products-api,
+  type: api,
+  product: smart-admin
+}
+
+
+# -- Define Pod [securityContext](https://kubernetes.io/docs/tasks/configure-pod-container/security-context/)
+podSecurityContext: {}
+# fsGroup: 2000
+
+
+# -- Define container [securityContext](https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-container)
+securityContext: {}
+  # capabilities:
+  #   drop:
+  #   - ALL
+  # readOnlyRootFilesystem: true
+# runAsNonRoot: true
+# runAsUser: 1000
+
+
+# -- Healthcheck settings
+# @default -- see subvalues
+healthcheck:
+  # -- Disable automatic healthcheck probes.
+  # Automatic probes will always create a HTTP healthcheck probe if container has port named http,
+  disableAutomatic: false
+  # -- Define custom healthcheck probes for container. Overrides automatic probes.
+  enabled: false
+  probes:
+    # -- Define [livenessProbe](https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/)
+    livenessProbe: {}
+    # -- Define [readinessProbe](https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/)
+    readinessProbe: {}
+    # -- Define [startupProbe](https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/#define-startup-probes)
+    startupProbe: {}
+
+
+# -- Define [minReadySeconds](https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#min-ready-seconds) for deployments and statefulsets
+minReadySeconds: 10
+
+
+# -- Define a list of extra ConfigMap objects.
+# See values.yaml or chart documentation for examples on syntax
+configMaps: []
+  # - name: kubedeploy-configmap
+  #   mount: True # (optional) Should this configmap be mounted as volume in containers?
+  #   mountPath: /data/confmap # (required if mount=True) Define mount path for this configmap
+  #   data:
+  #     kubedeploy: |+
+  #       configmap values
+  #
+  # - name: kubedeploy2-configmap
+  #   mount: False
+  #   data:
+#     config: |+
+#       config2
+
+
+# -- Redeploy Deployments and Statefulsets if deployed ConfigMaps content change.
+configMapsHash: false
+
+
+# -- Define a list of extra Secrets objects.
+# See values.yaml or chart documentation for examples on syntax
+extraSecrets: []
+  # - name: opaque-secret
+  #   type: Opaque # (optional) - Default: Opaque if unspecified
+  #   mount: True # (optional) - should this sercret be mounted as volume in containers
+  #   mountPath: /mnt/secret-vol0 # (required if mount=True) - define mount path for this secret
+  #   data:
+  #     key: value # value will be automatically base64 encoded by chart template
+
+  # - name: tls-secret
+  #   type: kubernetes.io/tls
+  #   data:
+  #     tls.crt: |
+  #       --------BEGIN CERTIFICATE-----
+  #       MIIC2DCCAcCgAwIBAgIBATANBgkqh ...
+  #     tls.key: |
+  #       -----BEGIN RSA PRIVATE KEY-----
+  #       MIIEpgIBAAKCAQEA7yn3bRHQ5FHMQ ...
+  #     tls.ca: |
+  #       --------BEGIN CERTIFICATE-----
+  #       MIIC2DCCAcCgAwIBAgIBATANBgkqh ...
+
+  # - name: ssh-key-secret
+  #   type: kubernetes.io/ssh-auth
+  #   data:
+#     ssh-privatekey: |
+#       MIIEpQIBAAKCAQEAulqb/Y ...
+
+
+# -- Define extra volume mounts for containers
+# See values.yaml or chart documentation for examples on syntax
+extraVolumeMounts: []
+
+  ## Mount existing volume claim
+  # - name: extra-volume-0
+  #   mountPath: /mnt/volume0
+  #   readOnly: true
+  #   existingClaim: volume-claim
+
+  ## Mount host path
+  # - name: extra-volume-1
+  #   mountPath: /mnt/volume1
+  #   readOnly: true
+  #   hostPath: /usr/shared/
+
+  ## Mount secret from CSI driver
+  # - name: external-secrets
+  #   mountPath: /mnt/volume2
+  #   csi: true
+  #   data:
+  #     driver: secrets-store.csi.k8s.io
+  #     readOnly: true
+  #     volumeAttributes:
+  #       secretProviderClass: "secret-provider-name"
+
+  ## Mount emtpyDir
+  # - name: empty-dir-vol
+  #   mountPath: /mnt/volume3
+
+  ## Mount K8s secret
+  # - name: secret-mount
+  #   mountPath: /mnt/volume4
+  #   secretName: my-secret
+  #   chartName: false # If set true, chart will automatically prefix the secretName with chart generated fullname. Handy when the secret is also deployed with this chart
+  #   items:
+  #     - key: secret-key
+  #       path: path-in-volume4
+  #   optional: true  # If set to true, kubernetes will ignore this mount if secret is not available
+
+  ## Mount K8s ConfigMap
+  # - name: configMap-mount
+  #   mountPath: /mnt/volume5/subpath.cfg
+  #   configMapName: my-configmap
+  #   chartName: false # If set true, chart will automatically prefix the confgMapName with chart generated fullname. Handy when the configMap is also deployed with this chart
+  #   items:
+  #     - key: configMap-key
+  #       path: path-in-volume5
+#   subPath: subpath.cfg
+#   optional: true  # If set to true, kubernetes will ignore this mount if configMap is not available
+
+# --  [initContainers](https://kubernetes.io/docs/concepts/workloads/pods/init-containers/) settings
+# @default -- see subvalues
+initContainers:
+  # -- Define if initContainers are enabled.
+  enabled: false
+  # -- (optional) initContainers image pull policy
+  pullPolicy: IfNotPresent
+  # -- (optional) Define initContainers global resource requests and limits. Will be applied to all initContainers
+  # if more specific (per container) resource requests and limits are not defined
+  resources: {}
+    # requests:
+    #   cpu: 100m
+    #   memory: 128Mi
+    # limits:
+  #   cpu: 100m
+  #   memory: 128Mi
+
+  # -- (list) Sequential list of initContainers.
+  # @default -- see subvalues
+  containers:
+    # initContainers.containers[0].name -- (required) Define initContainer name
+    # @default -- busybox-init
+    - name: "busybox-init"
+      # -- (required) Define initContainer repository
+      repository: busybox
+      # -- (optional) Define initContainer image tag
+      tag: "latest"
+      # -- (optional) Define custom command for initContainer
+      command: ["sh", "-c", "exit 0"]
+      # -- (optional) Define custom arguments for initContainer
+      args: []
+      # -- (optional) Define custom resources for this specific initContainer.
+      resources: {}
+
+# -- [additionalContainers](https://kubernetes.io/docs/concepts/workloads/pods/#how-pods-manage-multiple-containers) settings
+# @default -- see subvalues
+additionalContainers:
+  # -- Define if additionalContainers are enabled
+  enabled: false
+  # -- (optional) additionalContainers image pull policy
+  pullPolicy: IfNotPresent
+  # -- (optional) Define additionalContainers global resource requests and limits. Will be applied to all additionalContainers
+  # if more specific (per container) resource requests and limits are not defined
+  resources: {}
+    # requests:
+    #   cpu: 100m
+    #   memory: 128Mi
+    # limits:
+  #   cpu: 100m
+  #   memory: 128Mi
+
+  # -- (list) Sequential list of additionalContainers.
+  # @default -- see subvalues
+  containers:
+    # additionalContainer.containers[0].name -- (required) Define additionalContainer name
+    # @default -- busybox-additional
+    - name: "busybox-additional"
+      # -- (required) Define additionalContainer repository
+      repository: busybox
+      # -- (optional) Define additionalContainer image tag
+      tag: "latest"
+      # -- (optional) Define custom command for additionalContainer
+      command: ["sh", "-c", "while true; do sleep 30; done;"]
+      # -- (optional) Define custom arguments for additionalContainer
+      args: []
+      # -- (optional) Define additionalContainer exposed ports
+      # see: [containerPort](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#containerport-v1-core)
+      ports: []
+        # - name: http
+        #   containerPort: 80
+        #   protocol: TCP
+        # - name: prometheus
+      #   containerPort: 9000
+      #   protocol: TCP
+
+      # -- (optional) Define healthcheck probes for additionalContainer
+      # @default -- see subvalues
+      healthcheck:
+        # -- Enable custom healthcheck probes for additionalContainer
+        enabled: false
+        probes:
+          # -- Define [livenessProbe](https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/)
+          livenessProbe: {}
+          # -- Define [readinessProbe](https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/)
+          readinessProbe: {}
+          # -- Define [startupProbe](https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/#define-startup-probes)
+          startupProbe: {}
+
+      # -- (optional) Define custom resources for this specific additionalContainer.
+      resources: {}
+
+
+# -- serviceAccount settings
+# @default -- see subvalues
+serviceAccount:
+  # -- Specifies whether a service account should be created
+  create: true
+  # -- Annotations to add to the service account
+  annotations: {}
+  # -- The name of the service account to use.
+  # If not set and create is true, a name is generated using the fullname template
+  name: ""
+
+
+# -- Pod anti-affinity can prevent the scheduler from placing application replicas on the same node.
+# The default value "soft" means that the scheduler should *prefer* to not schedule two replica pods
+#  onto the same node but no guarantee is provided.
+# The value "hard" means that the scheduler is *required* to not schedule two replica pods onto the same node.
+# The value "" will disable pod anti-affinity so that no anti-affinity rules will be configured.
+podAntiAffinity: ""
+
+
+# -- If anti-affinity is enabled sets the topologyKey to use for anti-affinity.
+# This can be changed to, for example, failure-domain.beta.kubernetes.io/zone
+podAntiAffinityTopologyKey: kubernetes.io/hostname
+
+
+# -- Define Pod [affinity](https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#affinity-and-anti-affinity)
+# disables automatic podAntiAffinity rules if defined.
+affinity: {}
+
+
+# -- Define custom [node selectors](https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#nodeselector) for Pod
+nodeSelector: {}
+
+
+# -- Define custom [topologySpreadConstraings](https://kubernetes.io/docs/concepts/scheduling-eviction/topology-spread-constraints/) for Pod
+topologySpreadConstraints: []
+
+
+# -- Define Pod [tolerations](https://kubernetes.io/docs/concepts/scheduling-eviction/taint-and-toleration/)
+tolerations: []
+
+
+# -- podDisruptionBudget settings
+# @default -- see subvalues
+podDisruptionBudget:
+  # -- Enable Pod disruption budget
+  # see: [podDisruptionBudget](https://kubernetes.io/docs/tasks/run-application/configure-pdb/)
+  enabled: false
+  # -- Minimum available replicas
+  minAvailable: 1
+  # -- (int) Maximum unavailable replicas
+  maxUnavailable:
+
+
+# -- networkPolicy settings
+# @default -- see subvalues
+networkPolicy:
+  # -- Enables Pod based [NetworkPolicy](https://kubernetes.io/docs/concepts/services-networking/network-policies/)
+  enabled: false
+  # -- Define Namespace where Ingress controller is deployed.
+  # Used to generate automatic policy to enable ingress access when .Values.ingress is enabled
+  ingressNamespace: ingress
+  # -- Define namespace where monitoring stack is deployed
+  # Used to generate automatic policy to enable monitoring access when .Values.monitoring is enabled
+  monitoringNamespace: monitoring
+  # -- (list) Define spec.ingress for [NetowkPolicy](https://kubernetes.io/docs/concepts/services-networking/network-policies/) rules
+  ingress: []
+  # -- (list) Define spec.egress for [NetowkPolicy](https://kubernetes.io/docs/concepts/services-networking/network-policies/) rules
+  egress: []
+
+
+## Exposing the application
+
+# -- Service object settings
+# @default -- see subvalues
+service:
+  # -- Set Service type. See [Service](https://kubernetes.io/docs/concepts/services-networking/service/#publishing-services-service-types) for available options.
+  type: ClusterIP
+  # -- Enable Service provisioning for release.
+  enabled: true
+  # -- Create a headless service. See [reference](https://kubernetes.io/docs/concepts/services-networking/service/#headless-services)
+  headless: false
+  # -- (list) Define listening ports for Service.
+  # If unspecified, chart will automatically generate ports list based on main container exposed ports.
+  # see values.yaml or chart documentation for syntax examples
+  ports:
+    - port: 8080 # (required) - port number as integer
+      #      targetPort: http # (required) - name of the exposed container or additionalContainer port as string
+      #      protocol: TCP # (required) Define service protocol. See [Supported protocols](https://kubernetes.io/docs/concepts/services-networking/service/#protocol-support)
+      name: http # (required) - name of the Service port as string. This should match container's port name
+
+
+# -- [Ingress](https://kubernetes.io/docs/concepts/services-networking/ingress/) object settings.
+# @default -- see subvalues
+ingress:
+  # -- Enable Ingres for release
+  enabled: false
+  # -- Ingress class name
+  className: "haproxy"
+  # -- Default Ingress pathType
+  pathType: ImplementationSpecific
+  # -- Deploy Ingress object with SSL support. Automatically configures the Ingress
+  # tls spec with all the configured ingress.hosts in one Secret.
+  withSSL: true
+  # -- Define default Service port that will be targeted by Ingress.
+  # @default -- first port from service.ports
+  svcPort: ""
+  # -- Additional Ingress annotations
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt
+  # -- (list) Ingress host list.
+  # @default -- see subvalues
+  hosts:
+    # ingress.hosts[0].host -- (string, required) Define Ingress hostname
+    - host: ""
+      # -- (list) Ingress host paths
+      # see values.yaml or chart documentation for examples
+      paths: []
+        # - path: / # (optional) defaults to /
+      #   svcPort: 5555 # (optional) custom service port for path, defaults to ingress.svcPort if undefined.
+      #   pathType: Prefix # (optional) custom pathType, defaults to ingress.pathType if undefined.
+
+  # ingress.tls -- (list) Ingress TLS list.
+  # **overrides any auto configured tls config created by withSSL**.
+  #
+  # Allows for custom secretName and host list to be defined. For cases where you have
+  # pre-configured SSL stored as Kubernetes secret.
+  # If secret does not exist, new one will be created by cert-manager.
+  # see values.yaml or chart documentation for examples:
+  tls: []
+    #- hosts: # (required) - list of hosts covered by ssl in secret
+  #    - example-domain.local
+  #  secretName: example-domain-tls # (optional) name of secret with SSL certificate
+
+# extraIngress -- (list) list of extra Ingress objects to deploy.
+# extraIngress requires additional name: parametar.
+# see ingress values for required spec or values example.
+extraIngress: []
+  #- name: ingres2 # (string, required) - name of extra ingress object
+  #  className: "haproxy-pub" # (optional) - defaults to haproxy
+  #  pathType: ImplementationSpecific # (optional) - defaults to ImplementationSpecific
+  #  withSSL: true # (optional) - defaults to true
+  #  svcPort: "" # (optional) - defaults to first port from service.ports
+  #  annotations: #(optional)
+  #    cert-manager.io/cluster-issuer: letsencrypt # (optional)
+  #  hosts:
+  #    - host: "test.com" # (required) - Define Ingress hostname
+  #      paths:
+  #        - path: / # (optional) defaults to /
+  #          svcPort: 5555 # (optional) - defaults to svcPort if undefined
+  #          pathType: Prefix # (optional) - defaults to pathType
+  #  tls: # (optional)
+  #    - hosts:  # (required) - list of hosts covered by ssl
+#        - example-domain.local
+#      secretName: example-domain-tls # (optional) name of secret with SSL certificate
+
+## Monitoring and scaling
+
+# -- Monitoring settings.
+# Will define Prometheus [ServiceMonitor](https://github.com/prometheus-operator/prometheus-operator/blob/main/Documentation/api.md#monitoring.coreos.com/v1.ServiceMonitor) or [PodMonitor](https://github.com/prometheus-operator/prometheus-operator/blob/main/Documentation/api.md#monitoring.coreos.com/v1.PodMonitor) objects.
+# @default -- see subvalues
+monitoring:
+  # -- Enable monitoring. If service.enabled=True chart will generate ServiceMonitor object, otherwise PodMonitor will be used.
+  enabled: false
+  # -- Provide additional labels to the ServiceMonitor metadata
+  labels: {
+    release: "smart-admin-products-api"
+  }
+  # -- Additional metric labels
+  targetLabels: [
+    "app",
+    "type",
+    "product"
+  ]
+  # -- Provide named service port used for scraping
+  scrapePort: metrics
+  # -- Provide HTTP path to scrape for metrics.
+  scrapePath: /metrics
+  # -- Provide interval at which metrics should be scraped
+  scrapeInterval: 20s
+  # -- Timeout after which the scrape is ended (must be less than scrapeInterval)
+  scrapeTimeout: 15s
+  # -- HTTP scheme to use for scraping.
+  scheme: http
+  # -- TLS configuration to use when scraping the endpoint
+  tlsConfig: {}
+  # -- Provide additional metricRelabelings to apply to samples before ingestion.
+  metricRelabelings: []
+  # -- Provide additional relabelings to apply to samples before scraping
+  relabelings: []
+
+
+# -- Autoscaling settings
+# @default -- see subvalues
+autoscaling:
+  # -- Enable autoscaling. Works only with deploymentMode=**Deployment**
+  enabled: false
+  # -- Minimum number of Pod replicas
+  minReplicas: 1
+  # -- Maximum number of Pod replicas
+  maxReplicas: 10
+  # -- (int) Scaling target CPU utilization as percentage of resources.requests.cpu
+  targetCPUUtilizationPercentage: 50
+  # -- (int) Scaling target memory utilization as percentage of resources.requests.mem
+  targetMemoryUtilizationPercentage:
+  # -- HPA configurable scaling behavior see [ref](https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/#configurable-scaling-behavior)
+  behavior: {}
+  #  scaleDown:
+  #    stabilizationWindowSeconds: 300
+  #    policies:
+  #    - type: Percent
+  #      value: 100
+  #      periodSeconds: 15
+
+
+# -- Keda settings
+# @default -- see subvalues
+keda:
+  # -- Kubernetes Event-driven Autoscaling: KEDA 2.x [ref](https://keda.sh/docs/2.3/concepts/scaling-deployments/)
+  # **Note:** mutually exclusive with HPA, enabling KEDA disables HPA
+  enabled: false
+  # -- Number of minimum replicas for KEDA autoscaling
+  minReplicas: 1
+  # -- Number of maximum replicas for KEDA autoscaling
+  maxReplicas: 10
+  # -- Interval for checking each trigger [ref](https://keda.sh/docs/2.10/concepts/scaling-deployments/#pollinginterval)
+  pollingInterval: 30
+  # -- The period to wait after the last trigger reported active before scaling the resource back to 0 [ref](https://keda.sh/docs/2.10/concepts/scaling-deployments/#cooldownperiod)
+  cooldownPeriod: 300
+  # -- After scaled object is deleted return workload to initial replica count [ref](https://keda.sh/docs/2.10/concepts/scaling-deployments/#advanced)
+  restoreToOriginalReplicaCount: false
+  scaledObject:
+    # -- Scaled object annotations, can be used to pause scaling [ref](https://keda.sh/docs/2.10/concepts/scaling-deployments/#pause-autoscaling)
+    annotations: {}
+  # -- HPA configurable scaling behavior see [ref](https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/#configurable-scaling-behavior)
+  behavior: {}
+  #  scaleDown:
+  #    stabilizationWindowSeconds: 300
+  #    policies:
+  #    - type: Percent
+  #      value: 100
+  #      periodSeconds: 15
+  # -- Keda triggers [ref](https://keda.sh/docs/2.10/concepts/scaling-deployments/#triggers) see values for prometheus example
+  triggers: []
+  #  - type: prometheus
+  #    metadata:
+  #      serverAddress: http://<prometheus-host>:9090
+  #      metricName: haproxy_process_idle_time_percent
+  #      threshold: '50'
+  #      query: avg(100-avg_over_time(haproxy_process_idle_time_percent{container="kubernetes-ingress-controller",service="mytest-kubernetes-ingress"}[2m]))
+
+
+## deploymentMode specifics
+
+# -- Cronjobspec settings
+# @default -- see subvalues
+cronjobspec:
+  # -- Define cronjob schedule, for details see [reference](https://kubernetes.io/docs/concepts/workloads/controllers/cron-jobs/#writing-a-cronjob-spec)
+  schedule: "0 * * * *"
+  #          ┌───────────── minute (0 - 59)
+  #          │ ┌───────────── hour (0 - 23)
+  #          │ │ ┌───────────── day of the month (1 - 31)
+  #          │ │ │ ┌───────────── month (1 - 12)
+  #          │ │ │ │ ┌───────────── day of the week (0 - 6) (Sunday to Saturday;
+  #          │ │ │ │ │                                   7 is also Sunday on some systems)
+  #          │ │ │ │ │                                   OR sun, mon, tue, wed, thu, fri, sat
+  #          │ │ │ │ │
+  #          * * * * *
+
+  # Define restart policy for cronjob if deploymentMode=**Cronjob**.
+  restartPolicy: OnFailure
+  # -- Define command for cronjob
+  #  Starting from Kubedeploy version 1.2 you should start using `image.command` instead of `cronjobspec.command`. Values will be available as failsafe up to Kubedeploy 2.0 when they will be removed.
+  command: []
+  # -- Define args for cronjob
+  #  Starting from Kubedeploy version 1.2 you should start using `image.args` instead of `cronjobspec.args`. Values will be available as failsafe up to Kubedeploy 2.0 when they will be removed.
+  args: []
+  # -- Define job backoff limit, see [reference](https://kubernetes.io/docs/concepts/workloads/controllers/job/#pod-backoff-failure-policy)
+  backoffLimit: 3
+  # -- (optional) Define deadline for starting the job, see [reference](https://kubernetes.io/docs/concepts/workloads/controllers/cron-jobs/#starting-deadline)
+  startingDeadlineSeconds: 180
+  # -- Define number of successful Job logs to keep
+  successfulJobsHistoryLimit: 3
+  # -- Define number of failed Job logs to keep
+  failedJobsHistoryLimit: 1
+  # -- Define concurrency policy options: Allow (default), Forbid or Replace, see [reference](https://kubernetes.io/docs/concepts/workloads/controllers/cron-jobs/#concurrency-policy)
+  concurrencyPolicy: ""
+
+
+# -- jobspec settings
+# @default -- see subvalues
+jobspec:
+  # -- Define restart policy for jobs if deploymentMode=**Job**, see [reference](https://kubernetes.io/docs/concepts/workloads/controllers/job/#handling-pod-and-container-failures)
+  restartPolicy: OnFailure
+  # -- Define command for Job
+  #  Starting from Kubedeploy version 1.2 you should start using `image.command` instead of `jobspec.command`. Values will be available as failsafe up to Kubedeploy 2.0 when they will be removed.
+  command: []
+  # -- Define args for Job
+  #  Starting from Kubedeploy version 1.2 you should start using `image.args` instead of `jobspec.args`. Values will be available as failsafe up to Kubedeploy 2.0 when they will be removed.
+  args: []
+  # -- Define Job paralelisam, see [reference](https://kubernetes.io/docs/concepts/workloads/controllers/job/#controlling-parallelism)
+  parallelism: 1
+  # -- Define Job backoff limit, see [reference](https://kubernetes.io/docs/concepts/workloads/controllers/job/#pod-backoff-failure-policy)
+  backoffLimit: 3
+  # -- Define [Automatic Cleanup for Finished Jobs](https://kubernetes.io/docs/concepts/workloads/controllers/ttlafterfinished/)
+  ttlSecondsAfterFinished: "300"
+
+
+# -- persistency settings
+# @default -- see subvalues
+persistency:
+  # -- (string) Define custom name for persistent storage class name
+  # @default -- uses cluster default storageClassName
+  storageClassName:
+
+  # -- Enable support for persistent volumes.
+  # Supported only if deploymentMode=Statefulset.
+  enabled: false
+  capacity:
+    # -- Define storage capacity
+    storage: 5Gi
+  # -- Define storage [access modes](https://kubernetes.io/docs/concepts/storage/persistent-volumes/#access-modes). Must be supported by available storageClass
+  accessModes:
+    - ReadWriteOnce
+  # -- Define where persistent volume will be mounted in containers.
+  mountPath: "/data"
+
+
+## Additional K8s manifests
+
+# -- Create dynamic manifest via values (templated).
+# See values.yaml or chart documentation for examples:
+extraObjects: []
+  # - apiVersion: v1
+  #   kind: Secret
+  #   metadata:
+  #     name: secret-basic-auth
+  #   type: kubernetes.io/basic-auth
+  #   stringData:
+#     username: admin
+#     password: t0p-Secret
