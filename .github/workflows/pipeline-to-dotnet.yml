@@ -165,28 +165,30 @@ jobs:
 
       - name: Create or Update Argo CD Application with Custom Values
         env:
-            ARGOCD_APP_NAMESPACE: ${{ secrets.ARGOCD_APP_NAMESPACE }}
-            HELM_REPO_URL: ${{ secrets.HELM_REPO_URL }}
-            HELM_CHART_NAME: ${{ secrets.HELM_CHART_NAME }}
+          ARGOCD_APP_NAMESPACE: ${{ secrets.ARGOCD_APP_NAMESPACE }}
+          HELM_REPO_URL: ${{ secrets.HELM_REPO_URL }}
+          HELM_CHART_NAME: ${{ secrets.HELM_CHART_NAME }}
         run: |
-            # Path to the custom values.yaml file
-            VALUES_FILE=deployment/values.yaml
-            
-            # Create or update Argo CD application with custom values file
-            argocd app create my-helm-app \
+        # Path to the custom values.yaml file
+          VALUES_FILE=deployment/values.yaml
+        
+        # Create or update Argo CD application with custom values file
+          argocd app create my-helm-app \
             --repo $HELM_REPO_URL \
             --helm-chart $HELM_CHART_NAME \
             --dest-server https://kubernetes.default.svc \
             --dest-namespace $ARGOCD_APP_NAMESPACE \
             --values $VALUES_FILE \
-            --sync-policy automated || \
-            argocd app set my-helm-app \
+            --sync-policy automated \
+            --grpc-web || \
+          argocd app set my-helm-app \
             --repo $HELM_REPO_URL \
             --helm-chart $HELM_CHART_NAME \
             --dest-server https://kubernetes.default.svc \
             --dest-namespace $ARGOCD_APP_NAMESPACE \
             --values $VALUES_FILE \
-            --sync-policy automated
+            --sync-policy automated \
+            --grpc-web
 
       - name: Sync Argo CD Application
         run: |
