@@ -173,7 +173,7 @@ jobs:
             VALUES_FILE=deployment/values.yaml
             
             # Create or update Argo CD application with custom values file
-            argocd app create my-helm-app \
+            argocd app create smart-admin-products-api \
             --repo $HELM_REPO_URL \
             --helm-chart $HELM_CHART_NAME \
             --dest-server https://kubernetes.default.svc \
@@ -181,7 +181,7 @@ jobs:
             --values $VALUES_FILE \
             --sync-policy automated \
             --grpc-web || \
-            argocd app set my-helm-app \
+            argocd app set smart-admin-products-api \
             --repo $HELM_REPO_URL \
             --helm-chart $HELM_CHART_NAME \
             --dest-server https://kubernetes.default.svc \
