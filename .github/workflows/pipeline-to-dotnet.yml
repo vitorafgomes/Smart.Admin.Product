@@ -179,7 +179,6 @@ jobs:
             --revision 1.2.2 \
             --dest-server https://kubernetes.default.svc \
             --dest-namespace smart-admin-apis \
-            --values $VALUES_FILE \
             --sync-policy automated \
             --grpc-web || \
             argocd app set smart-admin-products-api \
@@ -188,7 +187,6 @@ jobs:
             --revision 1.2.2 \
             --dest-server https://kubernetes.default.svc \
             --dest-namespace $ARGOCD_APP_NAMESPACE \
-            --values $VALUES_FILE \
             --sync-policy automated \
             --grpc-web 
 
