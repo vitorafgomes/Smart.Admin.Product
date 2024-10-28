@@ -178,15 +178,19 @@ jobs:
             --helm-chart $HELM_CHART_NAME \
             --dest-server https://kubernetes.default.svc \
             --dest-namespace $ARGOCD_APP_NAMESPACE \
+            --values $VALUES_FILE \
             --sync-policy automated \
-            --grpc-web || \
+            --grpc-web
+            --insecure-skip-server-verification || \
             argocd app set smart-admin-products-api \
             --repo $HELM_REPO_URL \
             --helm-chart $HELM_CHART_NAME \
             --dest-server https://kubernetes.default.svc \
             --dest-namespace $ARGOCD_APP_NAMESPACE \
+            --values $VALUES_FILE \
             --sync-policy automated \
-            --grpc-web
+            --grpc-web \
+            --insecure-skip-server-verification
 
       - name: Sync Argo CD Application
         run: |
