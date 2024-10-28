@@ -176,21 +176,21 @@ jobs:
             argocd app create smart-admin-products-api \
             --repo $HELM_REPO_URL \
             --helm-chart $HELM_CHART_NAME \
+            --revision 1.2.2 \
             --dest-server https://kubernetes.default.svc \
-            --dest-namespace $ARGOCD_APP_NAMESPACE \
+            --dest-namespace smart-admin-apis \
             --values $VALUES_FILE \
             --sync-policy automated \
-            --grpc-web
-            --insecure-skip-server-verification || \
+            --grpc-web || \
             argocd app set smart-admin-products-api \
             --repo $HELM_REPO_URL \
             --helm-chart $HELM_CHART_NAME \
+            --revision 1.2.2 \
             --dest-server https://kubernetes.default.svc \
             --dest-namespace $ARGOCD_APP_NAMESPACE \
             --values $VALUES_FILE \
             --sync-policy automated \
-            --grpc-web \
-            --insecure-skip-server-verification
+            --grpc-web 
 
       - name: Sync Argo CD Application
         run: |
