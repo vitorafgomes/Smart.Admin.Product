@@ -147,51 +147,50 @@ jobs:
       #          token: ${{ secrets.TOKEN_GITHUB }}
       #          workDir: infrastructure
 
-      - name: Install Argo CD CLI
-        run: |
-            curl -sSL -o /usr/local/bin/argocd https://github.com/argoproj/argo-cd/releases/download/v2.8.3/argocd-linux-amd64
-            chmod +x /usr/local/bin/argocd
-
-      - name: Login to Argo CD
-        env:
-          ARGOCD_SERVER: ${{ secrets.ARGOCD_SERVER }}
-          ARGOCD_USERNAME: ${{ secrets.ARGOCD_USERNAME }}
-          ARGOCD_PASSWORD: ${{ secrets.ARGOCD_PASSWORD }}
-        run: |
-          argocd login $ARGOCD_SERVER \
-            --username $ARGOCD_USERNAME \
-            --password $ARGOCD_PASSWORD \
-            --insecure
-            --grpc-web
-
-      - name: Create or Update Argo CD Application with Custom Values
-        env:
-            ARGOCD_APP_NAMESPACE: ${{ secrets.ARGOCD_APP_NAMESPACE }}
-            HELM_REPO_URL: ${{ secrets.HELM_REPO_URL }}
-            HELM_CHART_NAME: ${{ secrets.HELM_CHART_NAME }}
-        run: |
-            # Path to the custom values.yaml file
-            VALUES_FILE=./deployment/values.yaml
-            
-            # Create or update Argo CD application with custom values file
-            argocd app create smart-admin-products-api \
-            --repo $HELM_REPO_URL \
-            --helm-chart $HELM_CHART_NAME \
-            --revision 1.2.2 \
-            --dest-server https://kubernetes.default.svc \
-            --dest-namespace smart-admin-apis \
-            --grpc-web || \
-            argocd app set smart-admin-products-api \
-            --repo $HELM_REPO_URL \
-            --helm-chart $HELM_CHART_NAME \
-            --revision 1.2.2 \
-            --dest-server https://kubernetes.default.svc \
-            --dest-namespace $ARGOCD_APP_NAMESPACE \
-            --grpc-web 
-
-      - name: Sync Argo CD Application
-        run: |
-              argocd app sync my-helm-app
+#      - name: Install Argo CD CLI
+#        run: |
+#            curl -sSL -o /usr/local/bin/argocd https://github.com/argoproj/argo-cd/releases/download/v2.8.3/argocd-linux-amd64
+#            chmod +x /usr/local/bin/argocd
+#
+#      - name: Login to Argo CD
+#        env:
+#          ARGOCD_SERVER: ${{ secrets.ARGOCD_SERVER }}
+#          ARGOCD_USERNAME: ${{ secrets.ARGOCD_USERNAME }}
+#          ARGOCD_PASSWORD: ${{ secrets.ARGOCD_PASSWORD }}
+#        run: |
+#          argocd login $ARGOCD_SERVER \
+#            --username $ARGOCD_USERNAME \
+#            --password $ARGOCD_PASSWORD \
+#            --insecure
+#          
+#      - name: Create or Update Argo CD Application with Custom Values
+#        env:
+#            ARGOCD_APP_NAMESPACE: ${{ secrets.ARGOCD_APP_NAMESPACE }}
+#            HELM_REPO_URL: ${{ secrets.HELM_REPO_URL }}
+#            HELM_CHART_NAME: ${{ secrets.HELM_CHART_NAME }}
+#        run: |
+#            # Path to the custom values.yaml file
+#            VALUES_FILE=./deployment/values.yaml
+#            
+#            # Create or update Argo CD application with custom values file
+#            argocd app create smart-admin-products-api \
+#            --repo $HELM_REPO_URL \
+#            --helm-chart $HELM_CHART_NAME \
+#            --revision 1.2.2 \
+#            --dest-server https://kubernetes.default.svc \
+#            --dest-namespace smart-admin-apis \
+#            --grpc-web || \
+#            argocd app set smart-admin-products-api \
+#            --repo $HELM_REPO_URL \
+#            --helm-chart $HELM_CHART_NAME \
+#            --revision 1.2.2 \
+#            --dest-server https://kubernetes.default.svc \
+#            --dest-namespace $ARGOCD_APP_NAMESPACE \
+#            --grpc-web 
+#
+#      - name: Sync Argo CD Application
+#        run: |
+#              argocd app sync my-helm-app
 
 
       - name: Create Release Feature/BugFix Branch
