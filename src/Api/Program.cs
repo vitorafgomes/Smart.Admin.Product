@@ -1,14 +1,24 @@
+using Microsoft.AspNetCore.HttpLogging;
 using Smart.Admin.Products.Infrastructure.CrossCutting.Diagnostics;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Add HTTP logging
+builder.Services.AddHttpLogging(logging =>
+{
+    logging.LoggingFields = HttpLoggingFields.All; // Log all details
+    logging.RequestBodyLogLimit = 4096; // Optional: limit request body size for logging
+    logging.ResponseBodyLogLimit = 4096; // Optional: limit response body size for logging
+});
 
 // Add services to the container.
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 // builder.Services.AddOpenApi();
 builder.AddServiceDefaults();
 
-var app = builder.Build();
 
+var app = builder.Build();
+app.UseHttpLogging();
 // Get an instance of ILogger
 var logger = app.Services.GetRequiredService<ILogger<Program>>();
 
@@ -38,7 +48,7 @@ app.MapGet("/weatherforecast", () =>
             .ToArray();
         return forecast;
     })
-    .WithName("GetWeatherForecast");
+    .WithName("GetWeatherForecast").WithHttpLogging(HttpLoggingFields.All);
 
 app.Run();
 
